@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>臺師大USR國中小自然科學實驗營｜探索科學・動手實作</title>
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 載入 Google Fonts: Noto Sans TC 與 Inter 提升繁體中文與數字閱讀質感 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+          },
+          colors: {
+            cosmic: {
+              950: '#0b1124',
+              900: '#131d3b',
+              800: '#1c2b56',
+              700: '#263a73',
+            },
+            bio: {
+              light: '#86efac',
+              DEFAULT: '#4ade80',
+              dark: '#166534',
+            },
+            phys: {
+              light: '#e879f9',
+              DEFAULT: '#c084fc',
+              dark: '#6b21a8',
+            },
+            chem1: {
+              light: '#7dd3fc',
+              DEFAULT: '#38bdf8',
+              dark: '#075985',
+            },
+            chem2: {
+              light: '#fdba74',
+              DEFAULT: '#fb923c',
+              dark: '#9a3412',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ==========================================================================
+       自訂星空與發光實驗泡泡特效樣式（呼應主視覺海報氛圍）
+       ========================================================================== */
+    body {
+      background-color: #0b1124;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+
+    /* 深邃星空漸層背景 */
+    .cosmic-bg {
+      background:
+        radial-gradient(circle at 50% 12%, rgba(165, 180, 252, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 15% 45%, rgba(74, 222, 128, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 42% 72%, rgba(192, 132, 252, 0.16) 0%, transparent 42%),
+        radial-gradient(circle at 65% 60%, rgba(56, 189, 248, 0.16) 0%, transparent 42%),
+        radial-gradient(circle at 86% 38%, rgba(251, 146, 60, 0.16) 0%, transparent 42%),
+        linear-gradient(180deg, #162246 0%, #111a36 55%, #0b1124 100%);
+    }
+
+    /* 泡泡緩慢漂浮動畫 */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+    @keyframes floatReverse {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(6px); }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.25; transform: scale(0.9); }
+      50% { opacity: 0.95; transform: scale(1.15); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255,255,255,0.25)); }
+      50% { filter: drop-shadow(0 0 22px rgba(255,255,255,0.55)); }
+    }
+
+    .bubble-float-1 { animation: floatSlow 6s ease-in-out infinite; }
+    .bubble-float-2 { animation: floatReverse 7s ease-in-out infinite; }
+    .bubble-float-3 { animation: floatSlow 8s ease-in-out infinite 1s; }
+    /* SVG 互動泡泡節點樣式（滑鼠懸停與觸控點擊放大發光） */
+    .exp-node {
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .exp-node:hover,
+    .exp-node:focus,
+    .exp-node:active {
+      transform: scale(1.09);
+      filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.78));
+    }
+
+    /* 玻璃擬態卡片 */
+    .glass-panel {
+      background: rgba(23, 35, 71, 0.68);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    /* 主標題雲朵漸層文字 */
+    .cloud-title-gradient {
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 35%, #ec4899 70%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 自訂捲軸 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1124;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col cosmic-bg antialiased selection:bg-sky-400 selection:text-slate-950">
+
+  <!-- ========================================================================
+       1. 頂部導覽列 (立即報名 / 報名狀況查詢 / 自助報到系統)
+       ======================================================================== -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
+        <!-- 品牌識別 Logo -->
+        <a href="#top" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-sky-400 via-purple-500 to-amber-400 p-[2px] shadow-lg shadow-sky-500/20 group-hover:scale-105 transition">
+            <div class="w-full h-full rounded-2xl bg-cosmic-950 flex items-center justify-center">
+              <!-- 原子與實驗燒瓶融合 SVG 圖示 -->
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6m-5 0v5.5L5.2 16.8A2 2 0 006.9 20h10.2a2 2 0 001.7-3.2L14 8.5V3" />
+                <path stroke-linecap="round" d="M7.5 14h9" stroke="#4ade80" />
+                <circle cx="12" cy="16.5" r="1" fill="#fb923c" stroke="none" />
+                <circle cx="10" cy="17.5" r="0.8" fill="#c084fc" stroke="none" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <span class="block text-[10px] sm:text-xs font-semibold tracking-wider text-sky-300 leading-tight">國立臺灣師範大學 USR 計畫</span>
+            <span class="block text-sm sm:text-base lg:text-lg font-extrabold tracking-tight text-white leading-tight">國中小自然科學實驗營</span>
+          </div>
+        </a>
+
+        <!-- 平板與桌面版三大功能按鈕列 -->
+        <nav class="hidden md:flex items-center gap-2 lg:gap-3">
+          <a
+            href="https://forms.gle/5ZKo7aWtfLmsmBeY9"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 lg:gap-2 px-3.5 lg:px-5 py-2 rounded-full text-xs lg:text-sm font-extrabold text-slate-950 bg-gradient-to-r from-sky-300 via-emerald-300 to-amber-300 hover:brightness-110 active:scale-95 transition shadow-lg shadow-sky-500/25"
+          >
+            <span>立即報名</span>
+            <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+          </a>
+
+          <button
+            type="button"
+            onclick="openStatusModal()"
+            class="inline-flex items-center gap-1.5 lg:gap-2 px-3.5 lg:px-5 py-2 rounded-full text-xs lg:text-sm font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 active:scale-95 transition cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z" />
+            </svg>
+            <span>報名狀況查詢</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="openCheckinModal()"
+            class="inline-flex items-center gap-1.5 lg:gap-2 px-3.5 lg:px-5 py-2 rounded-full text-xs lg:text-sm font-bold text-emerald-200 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 active:scale-95 transition cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>自助報到系統</span>
+          </button>
+        </nav>
+
+        <!-- 手機版：立即報名快捷按鈕 + 選單觸發器 -->
+        <div class="flex md:hidden items-center gap-1.5">
+          <a
+            href="https://forms.gle/5ZKo7aWtfLmsmBeY9"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3 py-1.5 rounded-full text-xs font-extrabold text-slate-950 bg-gradient-to-r from-sky-300 via-emerald-300 to-amber-300 shadow-md"
+          >
+            立即報名
+          </a>
+          <button
+            id="mobile-menu-btn"
+            type="button"
+            aria-label="開啟功能選單"
+            class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手機版下拉功能抽屜 -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-white/10 bg-cosmic-950/95 px-4 pt-3 pb-4 space-y-2.5">
+      <a
+        href="https://forms.gle/5ZKo7aWtfLmsmBeY9"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-nav-link flex items-center justify-between px-4 py-3 rounded-xl font-extrabold text-slate-950 bg-gradient-to-r from-sky-300 via-emerald-300 to-amber-300"
+      >
+        <span>📝 立即報名（前往 Google 表單）</span>
+        <span>↗</span>
+      </a>
+      <button
+        type="button"
+        onclick="openStatusModal(); closeMobileMenu();"
+        class="w-full text-left flex items-center justify-between px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 font-bold text-white"
+      >
+        <span>🔍 報名狀況查詢</span>
+        <span class="text-slate-400">›</span>
+      </button>
+      <button
+        type="button"
+        onclick="openCheckinModal(); closeMobileMenu();"
+        class="w-full text-left flex items-center justify-between px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 hover:bg-emerald-500/30 font-bold text-emerald-200"
+      >
+        <span>✅ 自助報到系統</span>
+        <span class="text-emerald-300">›</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       2. 主視覺互動實驗星圖區 (緊貼導覽列上方，支援手機/平板/電腦自適應高度)
+       ======================================================================== -->
+  <main id="top" class="flex-1 flex flex-col items-center justify-start pt-2 pb-4 sm:pt-3 sm:pb-6">
+    <div class="w-full max-w-7xl mx-auto px-2.5 sm:px-5 lg:px-8">
+
+      <!-- 主視覺容器（內嵌右上角浮動原圖切換鈕，不佔用額外垂直高度） -->
+      <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-white/15 shadow-2xl bg-[#162247]/80">
+
+        <!-- 浮動原圖切換工具鈕 -->
+        <div class="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 flex items-center gap-1.5">
+          <label for="poster-upload" class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-cosmic-950/75 hover:bg-cosmic-950/90 backdrop-blur-md border border-white/20 text-[11px] sm:text-xs text-slate-200 transition shadow-md">
+            <svg class="w-3.5 h-3.5 text-amber-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="hidden sm:inline">套用海報原圖預覽</span>
+            <span class="sm:hidden">原圖</span>
+          </label>
+          <input id="poster-upload" type="file" accept="image/*" class="hidden" />
+          <button id="reset-poster-btn" type="button" onclick="resetPosterMode()" class="hidden px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-sky-500/85 hover:bg-sky-500 backdrop-blur-md border border-sky-300/50 text-[11px] sm:text-xs font-bold text-slate-950 transition cursor-pointer shadow-md">
+            返回互動星圖
+          </button>
+        </div>
+
+        <!-- 海報原圖檢視容器（選擇圖片後顯示） -->
+        <div id="uploaded-poster-wrapper" class="hidden w-full bg-cosmic-900">
+          <img id="uploaded-poster-img" alt="臺師大USR國中小自然科學實驗營海報" class="w-full h-auto max-h-[calc(100dvh-5rem)] object-contain mx-auto" />
+        </div>
+
+        <!-- 主視覺互動 SVG 實驗星圖（跨手機/平板/電腦等比例完整呈現，懸停或點擊泡泡會放大發光） -->
+        <div id="svg-poster-stage" class="w-full flex items-center justify-center">
+          <svg viewBox="0 0 1200 630" preserveAspectRatio="xMidYMid meet" class="w-full h-auto max-h-[calc(100dvh-5rem)] block select-none" role="img" aria-label="臺師大USR國中小自然科學實驗營互動實驗星圖">
+            <defs>
+              <stop offset="100%" stop-color="#111a38" />
+            </radialGradient>
+
+            <!-- 頂部發光雲朵漸層 -->
+            <radialGradient id="cloudGrad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96" />
+              <stop offset="65%" stop-color="#e0e7ff" stop-opacity="0.92" />
+              <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.85" />
+            </radialGradient>
+
+            <!-- 四大領域玻璃泡泡漸層 -->
+            <radialGradient id="bioBubble" cx="32%" cy="28%" r="70%">
+              <stop offset="0%" stop-color="#bbf7d0" stop-opacity="0.72" />
+              <stop offset="55%" stop-color="#4ade80" stop-opacity="0.48" />
+              <stop offset="100%" stop-color="#15803d" stop-opacity="0.65" />
+            </radialGradient>
+
+            <radialGradient id="physBubble" cx="32%" cy="28%" r="70%">
+              <stop offset="0%" stop-color="#f5d0fe" stop-opacity="0.72" />
+              <stop offset="55%" stop-color="#c084fc" stop-opacity="0.48" />
+              <stop offset="100%" stop-color="#7e22ce" stop-opacity="0.65" />
+            </radialGradient>
+
+            <radialGradient id="chem1Bubble" cx="32%" cy="28%" r="70%">
+              <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.78" />
+              <stop offset="55%" stop-color="#38bdf8" stop-opacity="0.48" />
+              <stop offset="100%" stop-color="#0369a1" stop-opacity="0.65" />
+            </radialGradient>
+
+            <radialGradient id="chem2Bubble" cx="32%" cy="28%" r="70%">
+              <stop offset="0%" stop-color="#ffedd5" stop-opacity="0.76" />
+              <stop offset="55%" stop-color="#fb923c" stop-opacity="0.52" />
+              <stop offset="100%" stop-color="#9a3412" stop-opacity="0.68" />
+            </radialGradient>
+
+            <!-- 三稜鏡彩虹色散光束漸層 -->
+            <linearGradient id="rainbowBeam" x1="0%" y1="50%" x2="100%" y2="45%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+              <stop offset="25%" stop-color="#ef4444" stop-opacity="0.75" />
+              <stop offset="50%" stop-color="#eab308" stop-opacity="0.65" />
+              <stop offset="75%" stop-color="#22c55e" stop-opacity="0.45" />
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.05" />
+            </linearGradient>
+
+            <!-- 發光濾鏡 -->
+            <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="8" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <!-- 1. 星空底圖 -->
+          <rect width="1200" height="630" fill="url(#skyGrad)" />
+
+          <!-- 背景分子結構線條與原子裝飾（忠實還原海報細節） -->
+          <g stroke="rgba(186, 230, 253, 0.25)" stroke-width="1.5" fill="none">
+            <!-- 左上分子結構 -->
+            <line x1="112" y1="135" x2="112" y2="165" />
+            <line x1="112" y1="165" x2="88" y2="182" />
+            <line x1="112" y1="165" x2="136" y2="182" />
+            <circle cx="112" cy="135" r="6" fill="rgba(186,230,253,0.18)" />
+            <circle cx="112" cy="165" r="8" fill="rgba(186,230,253,0.22)" />
+            <circle cx="88" cy="182" r="5" fill="rgba(186,230,253,0.18)" />
+            <circle cx="136" cy="182" r="5" fill="rgba(186,230,253,0.18)" />
+
+            <!-- 左上原子軌道圖示 -->
+            <g transform="translate(135, 50)">
+              <ellipse rx="16" ry="6" transform="rotate(30)" />
+              <ellipse rx="16" ry="6" transform="rotate(-30)" />
+              <ellipse rx="16" ry="6" transform="rotate(90)" />
+              <circle r="3" fill="#7dd3fc" />
+            </g>
+
+            <!-- 中央原子圖示 -->
+            <g transform="translate(585, 222)">
+              <ellipse rx="15" ry="5.5" transform="rotate(25)" />
+              <ellipse rx="15" ry="5.5" transform="rotate(-35)" />
+              <ellipse rx="15" ry="5.5" transform="rotate(85)" />
+              <circle r="2.5" fill="#c084fc" />
+            </g>
+
+            <!-- 右上分子結構 -->
+            <line x1="935" y1="90" x2="935" y2="115" />
+            <line x1="935" y1="115" x2="915" y2="128" />
+            <line x1="935" y1="115" x2="955" y2="128" />
+            <circle cx="935" cy="90" r="4" />
+            <circle cx="935" cy="115" r="6" />
+            <circle cx="915" cy="128" r="4" />
+            <circle cx="955" cy="128" r="4" />
+          </g>
+
+          <!-- 閃爍星點 -->
+          <g fill="#ffffff">
+            <circle class="star-twinkle" cx="65" cy="80" r="1.8" />
+            <circle class="star-twinkle" cx="315" cy="48" r="2.2" style="animation-delay:0.8s" />
+            <circle class="star-twinkle" cx="465" cy="215" r="1.6" style="animation-delay:1.5s" />
+            <circle class="star-twinkle" cx="890" cy="45" r="2" style="animation-delay:0.4s" />
+            <circle class="star-twinkle" cx="1145" cy="95" r="2.2" style="animation-delay:1.2s" />
+            <circle class="star-twinkle" cx="55" cy="540" r="1.8" style="animation-delay:2s" />
+            <circle class="star-twinkle" cx="620" cy="585" r="2" style="animation-delay:0.6s" />
+            <circle class="star-twinkle" cx="1150" cy="570" r="1.8" style="animation-delay:1.8s" />
+          </g>
+
+          <!-- ================================================================
+               2. 頂部中央發光雲朵主標題：「臺師大USR國中小 自然科學實驗營」
+               ================================================================ -->
+          <g filter="url(#softGlow)" class="bubble-float-1">
+            <path
+              d="M425,148
+                 C375,148 345,112 355,68
+                 C362,32 398,8 442,14
+                 C468,-6 525,-8 560,12
+                 C605,-8 665,-6 695,14
+                 C745,6 792,28 802,68
+                 C814,112 782,150 732,150
+                 C705,172 652,175 615,158
+                 C582,178 525,178 492,158
+                 C462,172 440,162 425,148 Z"
+              fill="url(#cloudGrad)"
+              stroke="rgba(255,255,255,0.85)"
+              stroke-width="2.5"
+            />
+            <text x="580" y="68" text-anchor="middle" font-size="34" font-weight="900" fill="#5b63b7" letter-spacing="2">
+              臺師大USR國中小
+            </text>
+            <text x="580" y="116" text-anchor="middle" font-size="36" font-weight="900" fill="#7c5aa6" letter-spacing="3">
+              自然科學實驗營
+            </text>
+          </g>
+
+          <!-- ================================================================
+               3. 領域一：生物 (Biology - 左側綠色泡泡群)
+               ================================================================ -->
+          <g class="bubble-float-2">
+            <!-- 生物領域標籤泡泡 -->
+            <g class="exp-node">
+              <circle cx="212" cy="86" r="52" fill="url(#bioBubble)" stroke="#86efac" stroke-width="2" />
+              <ellipse cx="195" cy="65" rx="14" ry="7" transform="rotate(-30 195 65)" fill="rgba(255,255,255,0.45)" />
+              <text x="212" y="94" text-anchor="middle" font-size="25" font-weight="800" fill="#ffffff">生物</text>
+            </g>
+
+            <!-- 泡泡連接橋接 -->
+            <path d="M180,355 Q195,385 185,415" stroke="#86efac" stroke-width="14" stroke-linecap="round" opacity="0.35" />
+            <path d="M250,285 Q235,345 245,395" stroke="#86efac" stroke-width="14" stroke-linecap="round" opacity="0.35" />
+
+            <!-- 顯微鏡觀察泡泡 -->
+            <g id="node-bio-micro" class="exp-node">
+              <circle cx="118" cy="295" r="88" fill="url(#bioBubble)" stroke="#86efac" stroke-width="2.2" />
+              <ellipse cx="86" cy="252" rx="22" ry="10" transform="rotate(-35 86 252)" fill="rgba(255,255,255,0.4)" />
+              <!-- 顯微鏡精細 SVG 圖示 -->
+              <g transform="translate(75, 222)" stroke="#e2e8f0" stroke-width="2.5" fill="none">
+                <rect x="28" y="8" width="12" height="38" rx="3" transform="rotate(-25 34 27)" fill="#94a3b8" />
+                <path d="M46,34 C68,42 74,76 55,98" stroke-width="7" stroke="#cbd5e1" stroke-linecap="round" />
+                <line x1="16" y1="74" x2="54" y2="74" stroke-width="4" stroke="#334155" />
+                <path d="M14,112 L72,112 L66,100 L20,100 Z" fill="#64748b" />
+                <circle cx="42" cy="90" r="6" fill="#38bdf8" />
+              </g>
+              <text x="118" y="362" text-anchor="middle" font-size="14" font-weight="700" fill="#ecfdf5">顯微世界探索</text>
+            </g>
+
+            <!-- 拍攝水中小生物泡泡 -->
+            <g id="node-bio-critters" class="exp-node">
+              <circle cx="305" cy="225" r="88" fill="url(#bioBubble)" stroke="#86efac" stroke-width="2.5" />
+              <text x="305" y="164" text-anchor="middle" font-size="18" font-weight="800" fill="#064e3b">拍攝水中小生物</text>
+              <!-- 放大鏡與水中微生物 -->
+              <circle cx="302" cy="222" r="46" fill="#bae6fd" stroke="#334155" stroke-width="6" />
+              <line x1="336" y1="256" x2="385" y2="305" stroke="#334155" stroke-width="11" stroke-linecap="round" />
+              <!-- 輪蟲 / 矽藻微生物插畫 -->
+              <ellipse cx="288" cy="212" rx="10" ry="18" transform="rotate(-20 288 212)" fill="#4ade80" stroke="#166534" stroke-width="1.5" />
+              <ellipse cx="318" cy="226" rx="9" ry="16" transform="rotate(15 318 226)" fill="#2dd4bf" stroke="#115e59" stroke-width="1.5" />
+              <circle cx="295" cy="242" r="6" fill="#a3e635" />
+              <text x="305" y="294" text-anchor="middle" font-size="15" font-weight="800" fill="#ffffff">如教科書般</text>
+            </g>
+
+            <!-- 水中植物泡泡 -->
+            <g id="node-bio-plants" class="exp-node">
+              <circle cx="232" cy="485" r="102" fill="url(#bioBubble)" stroke="#86efac" stroke-width="2.2" />
+              <!-- 水蘊草插畫 -->
+              <g transform="translate(215, 392)">
+                <path d="M25,115 Q15,65 22,15" stroke="#15803d" stroke-width="4" fill="none" />
+                <path d="M40,115 Q45,55 38,8" stroke="#16a34a" stroke-width="4" fill="none" />
+                <path d="M55,115 Q68,65 58,20" stroke="#15803d" stroke-width="4" fill="none" />
+                <ellipse cx="14" cy="45" rx="10" ry="4" transform="rotate(-30 14 45)" fill="#22c55e" />
+                <ellipse cx="32" cy="35" rx="10" ry="4" transform="rotate(25 32 35)" fill="#4ade80" />
+                <ellipse cx="48" cy="52" rx="11" ry="4" transform="rotate(-20 48 52)" fill="#22c55e" />
+                <ellipse cx="64" cy="42" rx="10" ry="4" transform="rotate(30 64 42)" fill="#4ade80" />
+              </g>
+              <!-- 培養皿插畫 -->
+              <ellipse cx="195" cy="505" rx="52" ry="18" fill="rgba(224,242,254,0.65)" stroke="#94a3b8" stroke-width="2.5" />
+              <ellipse cx="195" cy="512" rx="52" ry="18" fill="none" stroke="#cbd5e1" stroke-width="2" />
+              <circle cx="182" cy="505" r="5" fill="#22c55e" />
+              <circle cx="206" cy="508" r="6" fill="#16a34a" />
+              <text x="235" y="558" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">水中植物</text>
+            </g>
+          </g>
+
+          <!-- ================================================================
+               4. 領域二：物理 (Physics - 中央偏左紫色泡泡群 + 三稜鏡彩虹光束)
+               ================================================================ -->
+          <g class="bubble-float-3">
+            <!-- 物理領域標籤泡泡 -->
+            <g class="exp-node">
+              <circle cx="472" cy="232" r="44" fill="url(#physBubble)" stroke="#e879f9" stroke-width="2" />
+              <text x="472" y="240" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">物理</text>
+            </g>
+
+            <!-- 密室逃脫：理化綜合關卡泡泡 -->
+            <g id="node-phys-escape" class="exp-node">
+              <circle cx="575" cy="308" r="74" fill="url(#physBubble)" stroke="#e879f9" stroke-width="2.4" />
+              <text x="575" y="256" text-anchor="middle" font-size="17" font-weight="800" fill="#fae8ff">密室逃脫</text>
+              <!-- 迷宮鑰匙孔圖示 -->
+              <path d="M560,292 A17,17 0 1,1 590,292 L596,332 L554,332 Z" fill="#4c1d95" stroke="#f0abfc" stroke-width="2.5" />
+              <path d="M568,288 H582 V298 H572 V308 H584 V320 H566" stroke="#f5d0fe" stroke-width="2" fill="none" />
+              <text x="575" y="356" text-anchor="middle" font-size="14" font-weight="800" fill="#ffffff">理化綜合關卡</text>
+            </g>
+
+            <!-- 光與顏色（三稜鏡與彩虹色散光束） -->
+            <g id="node-phys-light" class="exp-node">
+              <circle cx="458" cy="495" r="102" fill="url(#physBubble)" stroke="#e879f9" stroke-width="2.4" />
+              <text x="458" y="382" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">光與顏色</text>
+
+              <!-- 入射白光 -->
+              <line x1="335" y1="535" x2="435" y2="495" stroke="#ffffff" stroke-width="4" opacity="0.9" />
+
+              <!-- 彩虹七色光束射向右側化學區（完美重現海報視覺動線） -->
+              <polygon points="475,478 860,425 860,435 477,484" fill="#ef4444" opacity="0.72" />
+              <polygon points="477,484 860,435 860,445 479,490" fill="#f97316" opacity="0.72" />
+              <polygon points="479,490 860,445 860,455 481,496" fill="#eab308" opacity="0.72" />
+              <polygon points="481,496 860,455 860,465 483,502" fill="#22c55e" opacity="0.68" />
+              <polygon points="483,502 860,465 860,475 485,508" fill="#06b6d4" opacity="0.65" />
+              <polygon points="485,508 860,475 860,485 487,514" fill="#6366f1" opacity="0.62" />
+
+              <!-- 玻璃三稜鏡 -->
+              <polygon points="458,432 406,535 510,535" fill="rgba(255,255,255,0.28)" stroke="#ffffff" stroke-width="2.5" />
+              <polygon points="458,432 430,535 510,535" fill="rgba(216,180,254,0.22)" />
+            </g>
+          </g>
+
+          <!-- ================================================================
+               5. 領域三：化學1 (Chemistry 1 - 中央偏右水藍色泡泡群：氫氣 & 二氧化碳製備)
+               ================================================================ -->
+          <g class="bubble-float-1">
+            <!-- 化學1領域標籤泡泡 -->
+            <g class="exp-node">
+              <circle cx="772" cy="215" r="46" fill="url(#chem1Bubble)" stroke="#7dd3fc" stroke-width="2" />
+              <text x="772" y="223" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">化學1</text>
+            </g>
+
+            <!-- 氫氣製備 + 性質檢驗 -->
+            <g id="node-chem1-h2" class="exp-node">
+              <!-- 左：氫氣製備錐形瓶泡泡 -->
+              <circle cx="695" cy="355" r="76" fill="url(#chem1Bubble)" stroke="#7dd3fc" stroke-width="2.2" />
+              <!-- 右：性質檢驗圓底燒瓶泡泡 -->
+              <circle cx="852" cy="335" r="64" fill="url(#chem1Bubble)" stroke="#7dd3fc" stroke-width="2.2" />
+
+              <!-- 錐形瓶插畫 -->
+              <path d="M685,305 L705,305 L705,322 L728,382 A8,8 0 0,1 720,392 L670,392 A8,8 0 0,1 662,382 L685,322 Z" fill="rgba(186,230,253,0.45)" stroke="#e0f2fe" stroke-width="2.5" />
+              <!-- 圓底燒瓶插畫 -->
+              <circle cx="852" cy="345" r="34" fill="rgba(186,230,253,0.35)" stroke="#e0f2fe" stroke-width="2.5" />
+              <rect x="844" y="294" width="16" height="20" fill="rgba(186,230,253,0.35)" stroke="#e0f2fe" stroke-width="2" />
+              <!-- 玻璃導氣管連接 -->
+              <path d="M695,305 L695,274 L852,274 L852,294" fill="none" stroke="#bae6fd" stroke-width="4" stroke-linejoin="round" />
+
+              <text x="695" y="362" text-anchor="middle" font-size="16" font-weight="900" fill="#0c4a6e">氫氣</text>
+              <text x="695" y="382" text-anchor="middle" font-size="16" font-weight="900" fill="#0c4a6e">製備</text>
+
+              <text x="852" y="342" text-anchor="middle" font-size="15" font-weight="800" fill="#0c4a6e">性質</text>
+              <text x="852" y="360" text-anchor="middle" font-size="15" font-weight="800" fill="#0c4a6e">檢驗</text>
+            </g>
+
+            <!-- 二氧化碳製備 + 性質檢驗 -->
+            <g id="node-chem1-co2" class="exp-node">
+              <!-- 左下：性質檢驗 -->
+              <circle cx="715" cy="512" r="64" fill="url(#chem1Bubble)" stroke="#7dd3fc" stroke-width="2.2" />
+              <!-- 右下：二氧化碳製備 -->
+              <circle cx="878" cy="505" r="78" fill="url(#chem1Bubble)" stroke="#7dd3fc" stroke-width="2.2" />
+
+              <!-- 導氣管連接 -->
+              <path d="M878,442 L878,415 L792,415 L792,485 L715,485" fill="none" stroke="#bae6fd" stroke-width="4" stroke-linejoin="round" />
+
+              <text x="715" y="508" text-anchor="middle" font-size="15" font-weight="800" fill="#0c4a6e">性質</text>
+              <text x="715" y="527" text-anchor="middle" font-size="15" font-weight="800" fill="#0c4a6e">檢驗</text>
+
+              <text x="878" y="498" text-anchor="middle" font-size="16" font-weight="900" fill="#0c4a6e">二氧化碳</text>
+              <text x="878" y="518" text-anchor="middle" font-size="16" font-weight="900" fill="#0c4a6e">製備</text>
+
+              <!-- 底部 O=C=O 分子模型 -->
+              <g transform="translate(878, 565)">
+                <line x1="-22" y1="0" x2="22" y2="0" stroke="#cbd5e1" stroke-width="4" />
+                <circle cx="-24" cy="0" r="9" fill="#9333ea" stroke="#f3e8ff" stroke-width="1.5" />
+                <circle cx="0" cy="0" r="11" fill="#2563eb" stroke="#dbeafe" stroke-width="1.5" />
+                <circle cx="24" cy="0" r="9" fill="#9333ea" stroke="#f3e8ff" stroke-width="1.5" />
+                <text x="-24" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">O</text>
+                <text x="0" y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">C</text>
+                <text x="24" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">O</text>
+              </g>
+            </g>
+          </g>
+
+          <!-- ================================================================
+               6. 領域四：化學2 (Chemistry 2 - 右側橘金色泡泡群)
+               ================================================================ -->
+          <g class="bubble-float-2">
+            <!-- 化學2領域標籤泡泡 -->
+            <g class="exp-node">
+              <circle cx="1018" cy="96" r="50" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2" />
+              <text x="1018" y="104" text-anchor="middle" font-size="23" font-weight="800" fill="#ffffff">化學2</text>
+            </g>
+
+            <!-- 大氣壓力：馬德堡半球 -->
+            <g id="node-chem2-magdeburg" class="exp-node">
+              <circle cx="1115" cy="148" r="44" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2" />
+              <text x="1115" y="153" text-anchor="middle" font-size="14" font-weight="800" fill="#431407">大氣壓力</text>
+
+              <circle cx="988" cy="215" r="82" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2.4" />
+              <!-- 馬德堡半球與拉力繩索圖示 -->
+              <circle cx="988" cy="202" r="30" fill="#cbd5e1" stroke="#475569" stroke-width="2.5" />
+              <line x1="988" y1="170" x2="988" y2="234" stroke="#1e293b" stroke-width="3" />
+              <line x1="922" y1="202" x2="958" y2="202" stroke="#78350f" stroke-width="3" />
+              <line x1="1018" y1="202" x2="1054" y2="202" stroke="#78350f" stroke-width="3" />
+              <!-- 兩側拉馬剪影 -->
+              <rect x="922" y="192" width="24" height="16" rx="4" fill="#78350f" />
+              <rect x="1030" y="192" width="24" height="16" rx="4" fill="#78350f" />
+              <text x="988" y="268" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff">馬德堡半球</text>
+            </g>
+
+            <!-- Cyanotype 藍印術實驗 -->
+            <g id="node-chem2-cyanotype" class="exp-node">
+              <circle cx="1108" cy="318" r="78" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2.4" />
+              <text x="1108" y="262" text-anchor="middle" font-size="14" font-weight="800" fill="#431407">Cyanotype</text>
+              <!-- 普魯士藍植物拓印畫框 -->
+              <rect x="1074" y="275" width="68" height="76" rx="6" fill="#1e3a8a" stroke="#f8fafc" stroke-width="3" />
+              <path d="M1108,342 L1108,288 M1108,325 L1090,312 M1108,325 L1126,312 M1108,308 L1093,296 M1108,308 L1123,296" stroke="#dbeafe" stroke-width="3" stroke-linecap="round" />
+              <text x="1108" y="378" text-anchor="middle" font-size="15" font-weight="900" fill="#ffffff">藍印術實驗</text>
+            </g>
+
+            <!-- 墨水的秘密：色層分析 -->
+            <g id="node-chem2-chromato" class="exp-node">
+              <circle cx="962" cy="402" r="74" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2.4" />
+              <text x="962" y="352" text-anchor="middle" font-size="14" font-weight="800" fill="#431407">墨水的秘密</text>
+              <!-- 濾紙色層分析條 -->
+              <rect x="932" y="362" width="60" height="62" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" />
+              <rect x="940" y="372" width="8" height="42" rx="2" fill="url(#rainbowBeam)" />
+              <rect x="958" y="370" width="8" height="44" rx="2" fill="#22c55e" opacity="0.8" />
+              <rect x="976" y="374" width="8" height="40" rx="2" fill="#3b82f6" opacity="0.8" />
+              <text x="962" y="454" text-anchor="middle" font-size="15" font-weight="900" fill="#ffffff">色層分析</text>
+            </g>
+
+            <!-- 碳60模型製作 -->
+            <g id="node-chem2-c60" class="exp-node">
+              <circle cx="1088" cy="512" r="76" fill="url(#chem2Bubble)" stroke="#fdba74" stroke-width="2.4" />
+              <text x="1088" y="458" text-anchor="middle" font-size="15" font-weight="900" fill="#431407">碳60模型製作</text>
+              <!-- C60 巴克球幾何球體插畫 -->
+              <g transform="translate(1088, 518)" stroke="#334155" stroke-width="2" fill="none">
+                <circle r="34" fill="rgba(226,232,240,0.45)" />
+                <polygon points="0,-16 15,-5 9,13 -9,13 -15,-5" fill="rgba(148,163,184,0.6)" />
+                <line x1="0" y1="-16" x2="0" y2="-34" />
+                <line x1="15" y1="-5" x2="32" y2="-11" />
+                <line x1="9" y1="13" x2="21" y2="28" />
+                <line x1="-9" y1="13" x2="-21" y2="28" />
+                <line x1="-15" y1="-5" x2="-32" y2="-11" />
+                <circle cx="0" cy="-16" r="3" fill="#f59e0b" />
+                <circle cx="15" cy="-5" r="3" fill="#f59e0b" />
+                <circle cx="9" cy="13" r="3" fill="#f59e0b" />
+                <circle cx="-9" cy="13" r="3" fill="#f59e0b" />
+                <circle cx="-15" cy="-5" r="3" fill="#f59e0b" />
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       3. 報名狀況查詢彈窗 Modal
+       ======================================================================== -->
+  <div id="status-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="relative w-full max-w-md rounded-3xl bg-cosmic-900 border border-white/20 p-6 sm:p-7 shadow-2xl">
+      <button
+        type="button"
+        onclick="closeStatusModal()"
+        aria-label="關閉視窗"
+        class="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
+      >
+        ✕
+      </button>
+
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-sky-400/20 text-sky-300 mb-2">
+        REGISTRATION INQUIRY
+      </span>
+      <h3 class="text-2xl font-black text-white mb-1">報名狀況查詢</h3>
+      <p class="text-xs sm:text-sm text-slate-300 mb-5">請輸入報名時填寫的「學員姓名」與「家長聯絡電話」查詢錄取狀態。</p>
+
+      <form id="status-lookup-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-200 mb-1.5">學員姓名 *</label>
+          <input type="text" id="lookup-name" required placeholder="例如：王小明" class="w-full px-4 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/15 text-white text-sm focus:outline-none focus:border-sky-400" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-200 mb-1.5">家長聯絡電話 *</label>
+          <input type="tel" id="lookup-phone" required placeholder="例如：0912345678" class="w-full px-4 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/15 text-white text-sm focus:outline-none focus:border-sky-400" />
+        </div>
+        <button type="submit" class="w-full py-3 rounded-2xl font-extrabold text-slate-950 bg-gradient-to-r from-sky-300 to-emerald-300 hover:brightness-110 transition shadow-lg cursor-pointer">
+          立即查詢報名狀態
+        </button>
+      </form>
+
+      <!-- 查詢結果卡片 -->
+      <div id="status-result-box" class="hidden mt-5 p-4 rounded-2xl bg-cosmic-950/90 border border-sky-400/30 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-400">學員姓名：<strong id="res-student-name" class="text-white"></strong></span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+            ✅ 已完成報名登錄
+          </span>
+        </div>
+        <div class="text-xs text-slate-300 space-y-1 pt-1 border-t border-white/10">
+          <p>報到編號：<span id="res-ticket-id" class="font-mono font-bold text-amber-300">USR-018</span></p>
+          <p>錄取狀態：<span class="text-emerald-300 font-bold">正取（已確認保險與實驗器材名額）</span></p>
+          <p>活動地點：國立臺灣師範大學 公館校區理學院</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       4. 自助報到系統彈窗 Modal
+       ======================================================================== -->
+  <div id="checkin-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="relative w-full max-w-md rounded-3xl bg-cosmic-900 border border-white/20 p-6 sm:p-7 shadow-2xl">
+      <button
+        type="button"
+        onclick="closeCheckinModal()"
+        aria-label="關閉視窗"
+        class="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
+      >
+        ✕
+      </button>
+
+      <!-- 報到輸入表單 -->
+      <div id="checkin-form-view">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-400/20 text-emerald-300 mb-2">
+          SELF CHECK-IN SYSTEM
+        </span>
+        <h3 class="text-2xl font-black text-white mb-1">營隊自助報到系統</h3>
+        <p class="text-xs sm:text-sm text-slate-300 mb-5">抵達報到處後，請輸入學員姓名或報到編號完成線上報到，憑畫面領取實驗衣與名牌。</p>
+
+        <form id="self-checkin-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-200 mb-1.5">學員姓名 或 報到編號 *</label>
+            <input type="text" id="checkin-input" required placeholder="例如：王小明 或 USR-018" class="w-full px-4 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/15 text-white text-sm focus:outline-none focus:border-emerald-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-200 mb-1.5">家長手機末三碼 *</label>
+            <input type="text" id="checkin-phone-last3" maxlength="3" pattern="[0-9]{3}" required placeholder="例如：678" class="w-full px-4 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/15 text-white text-sm focus:outline-none focus:border-emerald-400" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-2xl font-black text-slate-950 bg-gradient-to-r from-emerald-300 via-sky-300 to-amber-300 hover:brightness-110 transition shadow-lg cursor-pointer">
+            確認完成報到
+          </button>
+        </form>
+      </div>
+
+      <!-- 報到成功通行證畫面 -->
+      <div id="checkin-success-view" class="hidden text-center space-y-4 py-2">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 flex items-center justify-center text-3xl mx-auto">
+          ✓
+        </div>
+        <div>
+          <span class="text-xs font-bold tracking-widest text-emerald-300 uppercase">CHECK-IN VERIFIED</span>
+          <h4 class="text-2xl font-black text-white mt-0.5">自助報到成功！</h4>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-cosmic-950 border border-emerald-400/30 text-left space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-400">學員識別</span>
+            <span id="checkin-display-name" class="font-bold text-white"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">分配小隊</span>
+            <span class="font-bold text-sky-300">第 2 小隊（水藍氫氣組）</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">報到時間</span>
+            <span id="checkin-timestamp" class="font-mono text-xs text-amber-300"></span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-300">請向現場服務台出示此畫面，領取實驗衣、護目鏡與科學探索手冊。</p>
+
+        <button
+          type="button"
+          onclick="closeCheckinModal()"
+          class="w-full py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold text-white transition cursor-pointer"
+        >
+          完成並關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       5. 互動邏輯腳本 (導覽功能、查詢與報到系統、原圖預覽切換)
+       ======================================================================== -->
+  <script>
+    // 1. 手機選單開關
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    function closeMobileMenu() {
+      mobileMenu.classList.add('hidden');
+    }
+
+    // 2. 報名狀況查詢 Modal 控制與模擬查詢
+    function openStatusModal() {
+      const modal = document.getElementById('status-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('status-result-box').classList.add('hidden');
+    }
+
+    function closeStatusModal() {
+      const modal = document.getElementById('status-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('status-lookup-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const nameVal = document.getElementById('lookup-name').value.trim();
+      const phoneVal = document.getElementById('lookup-phone').value.trim();
+      const suffix = phoneVal.slice(-3).padStart(3, '0');
+
+      document.getElementById('res-student-name').textContent = nameVal || '學員';
+      document.getElementById('res-ticket-id').textContent = `USR-${suffix}`;
+      document.getElementById('status-result-box').classList.remove('hidden');
+    });
+
+    // 3. 自助報到系統 Modal 控制與報到完成憑證
+    function openCheckinModal() {
+      const modal = document.getElementById('checkin-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('checkin-form-view').classList.remove('hidden');
+      document.getElementById('checkin-success-view').classList.add('hidden');
+    }
+
+    function closeCheckinModal() {
+      const modal = document.getElementById('checkin-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('self-checkin-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const attendeeVal = document.getElementById('checkin-input').value.trim();
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      document.getElementById('checkin-display-name').textContent = attendeeVal;
+      document.getElementById('checkin-timestamp').textContent = timeStr;
+
+      document.getElementById('checkin-form-view').classList.add('hidden');
+      document.getElementById('checkin-success-view').classList.remove('hidden');
+    });
+
+    // 4. 點擊彈窗背景遮罩可關閉視窗
+    ['status-modal', 'checkin-modal'].forEach(modalId => {
+      const modalEl = document.getElementById(modalId);
+      modalEl.addEventListener('click', (e) => {
+        if (e.target === modalEl) {
+          modalEl.classList.add('hidden');
+          modalEl.classList.remove('flex');
+        }
+      });
+    });
+
+    // 5. 支援使用者直接載入本機海報圖檔預覽切換
+    const posterUpload = document.getElementById('poster-upload');
+    posterUpload.addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const objectUrl = URL.createObjectURL(file);
+      const imgEl = document.getElementById('uploaded-poster-img');
+      imgEl.src = objectUrl;
+      document.getElementById('uploaded-poster-wrapper').classList.remove('hidden');
+      document.getElementById('svg-poster-stage').classList.add('hidden');
+      document.getElementById('reset-poster-btn').classList.remove('hidden');
+    });
+
+    function resetPosterMode() {
+      document.getElementById('uploaded-poster-wrapper').classList.add('hidden');
+      document.getElementById('svg-poster-stage').classList.remove('hidden');
+      document.getElementById('reset-poster-btn').classList.add('hidden');
+      posterUpload.value = '';
+    }
+  </script>
+</body>
+</html>
